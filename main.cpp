@@ -80,21 +80,25 @@ void generateAndSortData(const std::vector<std::string>& algorithms, int n) {
 }
 
 int main(){
-    std::vector<double> VALUES = {0, 5, 10, 50, 100, 250, 500, 1000, 1500, 2500, 5000, 7500, 10000};
+    std::vector<double> VALUES = {0, 5, 10, 50, 100, 250/*, 500, 1000, 1500, 2500, 5000, 7500, 10000*/};
     std::vector<std::string> algorithms = {"Bubble", "Heap", "Insertion", "Selection", "Shell", "Merge", "Quick"};
     for (auto n : VALUES) {
         generateAndSortData(algorithms, n);
     }
-    //int result = std::system(".\\Lineal\\Lineal.exe");
-    /*if (result != 0) {
+    int result = std::system(".\\Lineal\\Graphic.exe");
+    if (result != 0) {
         std::cerr << "Error executing the plotting in GO." << std::endl;
     }
-    std::remove(".\\Lineal\\Insertion");
-    std::remove(".\\Lineal\\Merge");
+    for (const std::string& algorithm : algorithms) {
+        std::string filename = ".\\Lineal\\" + algorithm;
+        if (std::remove(filename.c_str()) != 0) {
+            perror("Error deleting the file");
+        }
+    }
     int results = std::system(".\\Lineal.png");
     if (results != 0) {
         std::cerr << "Error opening the image." << std::endl;
-    }*/
+    }
     return 0;
 }
 
