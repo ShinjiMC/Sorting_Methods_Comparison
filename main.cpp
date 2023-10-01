@@ -139,27 +139,74 @@ std::vector<double> ChooseD() {
     return std::vector<double>();
 }
 
+int ChooseGraphingLanguage() {
+    int opcion;
+    std::cout << "Choose a Graphing Language\n";
+    std::cout << "1. Go" << std::endl;
+    std::cout << "2. Python" << std::endl;
+    std::cout << "3. Exit" << std::endl;
+    
+    while (true) {
+        std::string input;
+        std::cout << "Input: ";
+        std::cin >> input;
+        if (input == "3") {
+            std::cout << "Exiting the program." << std::endl;
+            return -1;  // Indicates an exit
+        }
+        try {
+            opcion = std::stoi(input);
+            switch (opcion) {
+                case 1:
+                    return 0;  // Return 0 for Go
+                case 2:
+                    return 1;  // Return 1 for Python
+                default:
+                    std::cout << "Invalid option. Enter 1 for Go, 2 for Python, or 3 to exit." << std::endl;
+                    continue;
+            }
+        } catch (const std::invalid_argument& e) {
+            std::cout << "Invalid input. Enter 1 for Go, 2 for Python, or 3 to exit." << std::endl;
+        }
+    }
+}
 
 int main(){
     std::vector<double> VALUES = ChooseD();
-    if(VALUES.size()!=0){
+    int res = ChooseGraphingLanguage();
+    if(VALUES.size()!=0 && res !=-1){
         std::vector<std::string> algorithms = {"Bubble", "Heap", "Insertion", "Selection", "Shell", "Merge", "Quick"};
         for (auto n : VALUES) {
             generateAndSortData(algorithms, n);
         }
-        int result = std::system(".\\Lineal\\Graphic.exe");
-        if (result != 0) {
-            std::cerr << "Error executing the plotting in GO." << std::endl;
-        }
-        for (const std::string& algorithm : algorithms) {
-            std::string filename = ".\\Lineal\\" + algorithm;
-            if (std::remove(filename.c_str()) != 0) {
-                perror("Error deleting the file");
+        if (res == 0){
+            int result = std::system(".\\Lineal\\Graphic.exe");
+            if (result != 0) {
+                std::cerr << "Error executing the plotting in GO." << std::endl;
+            }
+            for (const std::string& algorithm : algorithms) {
+                std::string filename = ".\\Lineal\\" + algorithm;
+                if (std::remove(filename.c_str()) != 0) {
+                    perror("Error deleting the file");
+                }
+            }
+            int results = std::system(".\\Lineal.png");
+            if (results != 0) {
+                std::cerr << "Error opening the image." << std::endl;
             }
         }
-        int results = std::system(".\\Lineal.png");
-        if (results != 0) {
-            std::cerr << "Error opening the image." << std::endl;
+        if(res==1){
+            int result = std::system(".\\dist\\Lineal.exe");
+            if (result != 0) {
+                std::cerr << "Error executing the plotting in Python." << std::endl;
+            }
+            
+            for (const std::string& algorithm : algorithms) {
+                std::string filename = ".\\Lineal\\" + algorithm;
+                if (std::remove(filename.c_str()) != 0) {
+                    perror("Error deleting the file");
+                }
+            }
         }
     }
     return 0;
