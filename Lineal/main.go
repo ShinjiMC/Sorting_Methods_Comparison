@@ -11,7 +11,22 @@ import (
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/vg/draw"
 )
+
+type CustomLineStyle struct {
+	Width vg.Length
+	Color color.RGBA
+}
+
+func (c CustomLineStyle) ConvertToLineStyle() draw.LineStyle {
+	return draw.LineStyle{
+		Width:    c.Width,
+		Color:    c.Color,
+		Dashes:   []vg.Length{},
+		DashOffs: 0,
+	}
+}
 
 type commaTicks struct{}
 
@@ -69,7 +84,7 @@ func Ploteo(values [][]float64, sort []string) {
 	p.X.Label.Text = "Size of Data"
 	p.Y.Label.Text = "Delay Time"
 	p.Y.Tick.Marker = commaTicks{}
-	Xsort := []string{"0", "5", "10", "50", "100", "250", "500", "1000", "2500", "5000", "7500", "10000"}
+	Xsort := []string{"0", "5", "10", "50", "100", "250", "500", "1500", "1000", "2500", "5000", "7500", "10000"}
 	xticks := make([]plot.Tick, len(values[0]))
 	for i := 0; i < len(values[0]); i++ {
 		xticks[i] = plot.Tick{
@@ -80,12 +95,48 @@ func Ploteo(values [][]float64, sort []string) {
 	p.X.Tick.Marker = plot.ConstantTicks(xticks)
 	maxY := getMaxValue(values)
 	yTicks := []plot.Tick{}
-	for i := 0.0; i <= maxY; i += 0.1 {
-		yTicks = append(yTicks, plot.Tick{Value: float64(i), Label: strconv.FormatFloat(i, 'f', 1, 64)})
+	for i := 0.0; i <= maxY; {
+		tickValue := i
+		if maxY > 100 {
+			yTicks = append(yTicks, plot.Tick{Value: tickValue, Label: strconv.FormatFloat(tickValue, 'f', 0, 64)})
+			tickValue += 20.0
+		} else if maxY > 50 {
+			yTicks = append(yTicks, plot.Tick{Value: tickValue, Label: strconv.FormatFloat(tickValue, 'f', 1, 64)})
+			tickValue += 10.0
+		} else if maxY > 4 {
+			yTicks = append(yTicks, plot.Tick{Value: tickValue, Label: strconv.FormatFloat(tickValue, 'f', 1, 64)})
+			tickValue += 1.0
+		} else if maxY > 1 {
+			yTicks = append(yTicks, plot.Tick{Value: tickValue, Label: strconv.FormatFloat(tickValue, 'f', 1, 64)})
+			tickValue += 0.1
+		} else if maxY > 0.03 {
+			yTicks = append(yTicks, plot.Tick{Value: tickValue, Label: strconv.FormatFloat(tickValue, 'f', 2, 64)})
+			tickValue += 0.01
+		} else if maxY > 0.02 {
+			yTicks = append(yTicks, plot.Tick{Value: tickValue, Label: strconv.FormatFloat(tickValue, 'f', 3, 64)})
+			tickValue += 0.005
+		} else {
+			yTicks = append(yTicks, plot.Tick{Value: tickValue, Label: strconv.FormatFloat(tickValue, 'f', 3, 64)})
+			tickValue += 0.001
+		}
+		i = tickValue
 	}
 	p.Y.Min = 0.0
 	p.Y.Max = float64(maxY)
 	p.Y.Tick.Marker = plot.ConstantTicks(yTicks)
+	lineStyles := []CustomLineStyle{
+		{Width: vg.Points(1), Color: color.RGBA{R: 255, G: 0, B: 0, A: 255}},   // Rojo
+		{Width: vg.Points(1), Color: color.RGBA{R: 0, G: 0, B: 255, A: 255}},   // Azul
+		{Width: vg.Points(1), Color: color.RGBA{R: 0, G: 255, B: 0, A: 255}},   // Verde
+		{Width: vg.Points(1), Color: color.RGBA{R: 128, G: 0, B: 128, A: 255}}, // Púrpura
+		{Width: vg.Points(1), Color: color.RGBA{R: 255, G: 140, B: 0, A: 255}}, // Naranja
+		{Width: vg.Points(1), Color: color.RGBA{R: 0, G: 128, B: 128, A: 255}}, // Verde Azulado
+		{Width: vg.Points(1), Color: color.RGBA{R: 128, G: 128, B: 0, A: 255}}, // Amarillo-Oliva
+		{Width: vg.Points(1), Color: color.RGBA{R: 128, G: 0, B: 0, A: 255}},   // Marrón
+		{Width: vg.Points(1), Color: color.RGBA{R: 0, G: 0, B: 128, A: 255}},   // Azul Marino
+		{Width: vg.Points(1), Color: color.RGBA{R: 0, G: 128, B: 0, A: 255}},   // Verde Oscuro
+		{Width: vg.Points(1), Color: color.RGBA{R: 139, G: 0, B: 139, A: 255}}, // Violeta Oscuro
+	}
 	for i, vals := range values {
 		pts := make(plotter.XYs, len(vals))
 		for j, val := range vals {
@@ -97,13 +148,7 @@ func Ploteo(values [][]float64, sort []string) {
 		if err != nil {
 			panic(err)
 		}
-		line.LineStyle.Width = vg.Points(1)
-		line.LineStyle.Color = color.RGBA{
-			R: uint8(50 + (i * 15 % 255)), // Componente Rojo
-			G: uint8(50 + (i * 25 % 100)), // Componente Verde
-			B: uint8(50 + (i * 35 % 255)), // Componente Azul
-			A: 255,                        // Componente Alfa (opacidad)
-		}
+		line.LineStyle = lineStyles[i].ConvertToLineStyle()
 		p.Add(line)
 		p.Legend.Add(sort[i], line)
 	}
@@ -150,10 +195,5 @@ func main() {
 		uwu := SplitLogLine(values[i])
 		valuesX = append(valuesX, uwu)
 	}
-	for i, row := range valuesX {
-		fmt.Printf("Fila %d: %v\n", i, row)
-	}
 	Ploteo(valuesX, sorts)
-	//fmt.Println("Received:", string(data))
-	//Ploteo(insertion, merge, len(insertion)-1)
 }
