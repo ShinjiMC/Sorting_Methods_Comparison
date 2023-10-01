@@ -2,23 +2,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 import re
 
-# Define una clase de estilo de línea personalizado
 class CustomLineStyle:
     def __init__(self, width, color):
         self.width = width
         self.color = color
 
-# Define una función para agregar comas a los números
 def add_commas(value, _):
     return "{:,}".format(value)
 
-# Define una función para leer desde un archivo
 def read_from_file(filename):
     with open(filename, 'r') as file:
         data = file.read()
     return data
 
-# Define una función para obtener el valor máximo
 def get_max_value(values):
     max_val = -1.0
     for row in values:
@@ -27,15 +23,12 @@ def get_max_value(values):
                 max_val = val
     return max_val
 
-# Define una función para trazar los datos
 def plot_data(values, sort):
-    fig, ax = plt.subplots()
+    _, ax = plt.subplots()
 
     ax.set_title("Comparing Methods of Sorting")
     ax.set_xlabel("Size of Data")
     ax.set_ylabel("Delay Time")
-
-    # Formatea las etiquetas del eje Y con comas
     ax.get_yaxis().set_major_formatter(plt.FuncFormatter(add_commas))
 
     Xsort = ["0", "5", "10", "50", "100", "250", "500", "1000", "1500", "2500", "5000", "7500", "10000"]
@@ -44,7 +37,6 @@ def plot_data(values, sort):
     ax.set_xticklabels(Xsort)
     maxY = get_max_value(values)
     y_ticks = []
-
     i = 0.0
     while i <= maxY:
         tick_value = i
@@ -100,8 +92,7 @@ def plot_data(values, sort):
     plt.gcf().set_size_inches(7, 6)
     plt.savefig("Lineal.png", dpi=300, bbox_inches='tight', format='png')
     plt.show()
-
-# Define una función para dividir una línea de registro
+    
 def split_log_line(text):
     parts = re.split(r'\s+', text)
     numbers = []
